@@ -1,10 +1,8 @@
 # EDAMAME Portal
 
-> Part of the **[EDAMAME Agents](https://github.com/edamametechnologies#edamame-agents)** family - AI-powered security assistants with shared LLM subscription.
-
 ## Overview
 
-EDAMAME Portal is the subscription and device management interface for EDAMAME Security. Manage your LLM subscription plans, API keys, connected devices, and account settings.
+EDAMAME Portal is the subscription and device management interface for EDAMAME Security and EDAMAME Posture. Manage your LLM subscription plans, API keys, connected devices, and account settings.
 
 **Portal**: [portal.edamame.tech](https://portal.edamame.tech)
 
