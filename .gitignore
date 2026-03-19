@@ -1,0 +1,6 @@
+.DS_Store
+/wiki
+.browser_profile/
+__pycache__/
+*.pyc
+.venv/

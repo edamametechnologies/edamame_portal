@@ -1,0 +1,173 @@
+{
+  "screenshot_metadata": {
+    "_comment": "Screenshot filename mappings for sub_features. Portal uses portal.edamame.tech.",
+    "patterns": {
+      "default": "{prefix}_{subfeature_name}.png"
+    },
+    "sub_feature_mappings": {
+      "home_main": {
+        "prefix": "01"
+      },
+      "subscribe_main": {
+        "prefix": "02"
+      },
+      "settings_main": {
+        "prefix": "03"
+      },
+      "apikeys_main": {
+        "prefix": "04"
+      }
+    }
+  },
+  "features": [
+    {
+      "name": "home",
+      "title": {
+        "en": "Home",
+        "fr": "Accueil"
+      },
+      "visual": {
+        "en": "",
+        "fr": ""
+      },
+      "description": {
+        "en": "The portal home page shows device overview, usage metrics (tokens, threats, policies, network, traffic, identity), device registration, and connected device management.",
+        "fr": "La page d'accueil du portail affiche la vue d'ensemble des appareils, les metriques d'utilisation (tokens, menaces, politiques, reseau, trafic, identite), l'enregistrement et la gestion des appareils connectes."
+      },
+      "sub_features": [
+        {
+          "name": "home_main",
+          "path": "portal/home",
+          "title": {
+            "en": "Device Overview & Usage",
+            "fr": "Vue d'ensemble et utilisation"
+          },
+          "visual": {
+            "en": "",
+            "fr": ""
+          },
+          "description": {
+            "en": "Device selector, usage metrics (AllToken, Threats, Policies, Network, Traffic, Identity) with progress bars, device list with OS icons, register new device, delete device. Device detail with fingerprint, usage breakdown.",
+            "fr": "Selecteur d'appareil, metriques d'utilisation avec barres de progression, liste des appareils avec icones OS, enregistrement et suppression d'appareils."
+          },
+          "items": [
+            {
+              "name": "usage_metrics",
+              "title": {
+                "en": "Usage Metrics",
+                "fr": "Metriques d'utilisation"
+              },
+              "visual": {
+                "en": "",
+                "fr": ""
+              },
+              "description": {
+                "en": "Token consumption and usage by category (threats, policies, network, traffic, identity).",
+                "fr": "Consommation de tokens et utilisation par categorie."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "subscribe",
+      "title": {
+        "en": "Plans",
+        "fr": "Plans"
+      },
+      "visual": {
+        "en": "",
+        "fr": ""
+      },
+      "description": {
+        "en": "View and manage your LLM subscription. Compare plans (Free, Pro, Enterprise), switch between monthly and yearly billing, and upgrade or downgrade your subscription.",
+        "fr": "Consultez et gerez votre abonnement LLM. Comparez les plans (Gratuit, Pro, Entreprise), basculez entre facturation mensuelle et annuelle, et mettez a niveau ou retrogradez."
+      },
+      "sub_features": [
+        {
+          "name": "subscribe_main",
+          "path": "portal/subscribe",
+          "title": {
+            "en": "Subscription Plans",
+            "fr": "Plans d'abonnement"
+          },
+          "visual": {
+            "en": "",
+            "fr": ""
+          },
+          "description": {
+            "en": "Current subscription display, monthly/yearly toggle, plan cards with price, token limits, features. Select plan to open Stripe checkout. Loading and error states.",
+            "fr": "Affichage de l'abonnement actuel, bascule mensuel/annuel, cartes de plans avec prix, limites de tokens, fonctionnalites. Selection pour ouvrir Stripe checkout."
+          }
+        }
+      ]
+    },
+    {
+      "name": "settings",
+      "title": {
+        "en": "Settings",
+        "fr": "Parametres"
+      },
+      "visual": {
+        "en": "",
+        "fr": ""
+      },
+      "description": {
+        "en": "Account settings including password change. Password validation with strength checker and requirements.",
+        "fr": "Parametres du compte incluant le changement de mot de passe. Validation avec controles de force et exigences."
+      },
+      "sub_features": [
+        {
+          "name": "settings_main",
+          "path": "portal/settings",
+          "title": {
+            "en": "Account Settings",
+            "fr": "Parametres du compte"
+          },
+          "visual": {
+            "en": "",
+            "fr": ""
+          },
+          "description": {
+            "en": "Change password form. Current password, new password, confirm password fields. Password strength checker (lowercase, uppercase, number, special char, length). Validation and error handling.",
+            "fr": "Formulaire de changement de mot de passe. Champs mot de passe actuel, nouveau, confirmation. Controleur de force du mot de passe."
+          }
+        }
+      ]
+    },
+    {
+      "name": "apikeys",
+      "title": {
+        "en": "API Keys",
+        "fr": "Cles API"
+      },
+      "visual": {
+        "en": "",
+        "fr": ""
+      },
+      "description": {
+        "en": "Create and manage API keys for headless environments, CLI tools, and automation. Create keys with custom names, copy keys on creation (shown once), and revoke keys when no longer needed.",
+        "fr": "Creez et gerez des cles API pour les environnements headless, outils CLI et automatisation. Creez des cles avec des noms personnalises, copiez-les a la creation (affichage unique), et revoquez-les si necessaire."
+      },
+      "sub_features": [
+        {
+          "name": "apikeys_main",
+          "path": "portal/api-keys",
+          "title": {
+            "en": "API Key Management",
+            "fr": "Gestion des cles API"
+          },
+          "visual": {
+            "en": "",
+            "fr": ""
+          },
+          "description": {
+            "en": "Create API key button. Modal for key name. List of existing keys with name, created date, copy and delete actions. One-time key display after creation with copy button. Warning when revoking.",
+            "fr": "Bouton creer cle API. Modale pour le nom. Liste des cles existantes avec nom, date creation, actions copier et supprimer. Affichage unique de la cle apres creation."
+          }
+        }
+      ]
+    }
+  ]
+}
