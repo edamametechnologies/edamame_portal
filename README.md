@@ -21,15 +21,21 @@ Full feature descriptions with screenshots: [github.com/edamametechnologies/edam
 
 ## Screenshot Generation
 
+Screenshots are captured **manually on your machine** (Playwright against
+production). CI only rebuilds the wiki from committed PNGs.
+
 ```bash
 pip install -r requirements.txt
 playwright install chromium
 
-# First run: log in interactively
+# First run: log in interactively to save auth state
 python src/generate_screenshots.py --login
 
 # Subsequent runs: reuse saved auth
 python src/generate_screenshots.py
+
+# Commit PNGs, then push — feature-wiki.yml updates the GitHub wiki
+git add screenshots/ && git commit -m "docs: refresh Portal screenshots"
 ```
 
 ## Wiki Generation
