@@ -16,6 +16,9 @@
       },
       "apikeys_main": {
         "prefix": "04"
+      },
+      "notifications_main": {
+        "prefix": "05"
       }
     }
   },
@@ -27,43 +30,43 @@
         "fr": "Accueil"
       },
       "visual": {
-        "en": "",
-        "fr": ""
+        "en": "Dark-themed portal with a collapsible left sidebar (Home, Plans, API Keys, Notifications, Settings, and an external EDAMAME Hub link) and a user footer with avatar, email, and logout. The main column has a 'Home' header with a 'Try Edamame Hub' button. Below it, a 'Devices' card lets you select a device (a horizontal row of cards: an 'All Devices' card plus one card per device showing an OS icon, device name, and type) with an 'Add device' button. The lower 'Cloud LLM Usage' section shows total token consumption with a color-coded progress bar and a 'Token breakdown' card listing the top usage categories with share bars.",
+        "fr": "Portail sombre avec barre laterale (Home, Plans, API Keys, Notifications, Settings, lien Hub) et pied utilisateur. En-tete 'Home' avec bouton 'Try Edamame Hub'. Carte 'Devices' pour selectionner un appareil (cartes All Devices + une par appareil avec icone OS, nom, type) et bouton 'Add device'. Section 'Cloud LLM Usage' avec barre de progression de tokens et carte de repartition par categorie."
       },
       "description": {
-        "en": "The portal home page shows device overview, usage metrics (tokens, threats, policies, network, traffic, identity), device registration, and connected device management.",
-        "fr": "La page d'accueil du portail affiche la vue d'ensemble des appareils, les metriques d'utilisation (tokens, menaces, politiques, reseau, trafic, identite), l'enregistrement et la gestion des appareils connectes."
+        "en": "The portal home page lets a user manage their registered devices and review Cloud LLM token usage. A horizontal device selector (All Devices plus one card per device) drives a usage panel that breaks consumption down by category (tokens, threats, policies, network, traffic, identity) with progress bars. Devices can be registered, edited, or deleted via modals, and usage alerts prompt an upgrade as the token quota fills.",
+        "fr": "La page d'accueil du portail permet de gerer les appareils enregistres et de consulter l'utilisation des tokens Cloud LLM. Un selecteur d'appareils horizontal (All Devices plus une carte par appareil) pilote un panneau d'utilisation reparti par categorie (tokens, menaces, politiques, reseau, trafic, identite) avec barres de progression. Les appareils peuvent etre enregistres, modifies ou supprimes via des modales, et des alertes invitent a une mise a niveau lorsque le quota de tokens se remplit."
       },
       "sub_features": [
         {
           "name": "home_main",
           "path": "portal/home",
           "title": {
-            "en": "Device Overview & Usage",
-            "fr": "Vue d'ensemble et utilisation"
+            "en": "Device Overview & Cloud LLM Usage",
+            "fr": "Vue d'ensemble et utilisation Cloud LLM"
           },
           "visual": {
-            "en": "",
-            "fr": ""
+            "en": "A 'Devices' card titled 'Select a device to view its Cloud LLM usage' with an 'Add device' button and a horizontal strip of device cards (each with OS/type icon, name, and a Mac/Windows/Linux/Server label; edit and delete icons appear on hover). Below, the 'Cloud LLM Usage' card shows the selected scope (single device with its ID, or All Devices), a 'Live' badge, the total token count as a large figure, a description, an optional In/Out split, and a 10px progress bar that turns orange at 75% and red at 100%. A 'Token breakdown' card lists up to five categories (Threats, Policies, Network, Traffic, Identity) each with a token count, share percentage, and a thin green progress bar. Sticky orange/red usage banners appear near the top when the quota is high.",
+            "fr": "Carte 'Devices' ('Select a device to view its Cloud LLM usage') avec bouton 'Add device' et bande horizontale de cartes d'appareils (icone OS, nom, type ; icones modifier/supprimer au survol). Carte 'Cloud LLM Usage' avec badge 'Live', total de tokens, barre de progression coloree (orange a 75%, rouge a 100%), repartition optionnelle In/Out. Carte 'Token breakdown' listant jusqu'a cinq categories (Threats, Policies, Network, Traffic, Identity) avec part et barre verte. Bannieres d'alerte en haut quand le quota est eleve."
           },
           "description": {
-            "en": "Device selector, usage metrics (AllToken, Threats, Policies, Network, Traffic, Identity) with progress bars, device list with OS icons, register new device, delete device. Device detail with fingerprint, usage breakdown.",
-            "fr": "Selecteur d'appareil, metriques d'utilisation avec barres de progression, liste des appareils avec icones OS, enregistrement et suppression d'appareils."
+            "en": "Select a device (or All Devices) to view its Cloud LLM usage. The primary card shows total token consumption with a quota progress bar (green/orange/red), and a breakdown card ranks the top categories by share. Register a new device, edit its name and type, or delete it through dedicated modals. When no usage exists yet, a prompt invites the user to start using the AI Assistant in EDAMAME Security.",
+            "fr": "Selectionnez un appareil (ou All Devices) pour voir son utilisation Cloud LLM. La carte principale affiche la consommation totale de tokens avec une barre de quota (vert/orange/rouge) et une carte de repartition classe les principales categories par part. Enregistrez un nouvel appareil, modifiez son nom et son type, ou supprimez-le via des modales dediees. En l'absence de donnees, un message invite a utiliser l'Assistant IA dans EDAMAME Security."
           },
           "items": [
             {
               "name": "usage_metrics",
               "title": {
-                "en": "Usage Metrics",
-                "fr": "Metriques d'utilisation"
+                "en": "Cloud LLM Usage Metrics",
+                "fr": "Metriques d'utilisation Cloud LLM"
               },
               "visual": {
-                "en": "",
-                "fr": ""
+                "en": "Each category (All tokens, Threats, Policies, Network, Traffic, Identity) is shown with an icon, a token count, an optional limit, and a progress bar; the breakdown card adds a per-category share percentage.",
+                "fr": "Chaque categorie (All tokens, Threats, Policies, Network, Traffic, Identity) est affichee avec une icone, un nombre de tokens, une limite optionnelle et une barre de progression ; la carte de repartition ajoute le pourcentage de part par categorie."
               },
               "description": {
-                "en": "Token consumption and usage by category (threats, policies, network, traffic, identity).",
-                "fr": "Consommation de tokens et utilisation par categorie."
+                "en": "Token consumption is reported overall (AllToken) and per category: Threats, Policies, Network, Traffic, and Identity. Values display as token counts with progress bars relative to the plan limit.",
+                "fr": "La consommation de tokens est rapportee globalement (AllToken) et par categorie : Threats, Policies, Network, Traffic et Identity. Les valeurs s'affichent en nombre de tokens avec des barres de progression relatives a la limite du plan."
               }
             }
           ]
@@ -77,12 +80,12 @@
         "fr": "Plans"
       },
       "visual": {
-        "en": "",
-        "fr": ""
+        "en": "A 'Plans' page with a 'Your current plan' card at the top, a 'Monthly billing / Yearly billing (-20%)' toggle, and a row of plan cards (Vip, Free, Pro, Max). Each card shows a name, price (e.g. 0EUR, 5EUR, 20EUR), billing period, a token allowance (e.g. 100M, 500K, 2M, 10M tokens), support tier, and a 'Choose plan' button (greyed out for the current plan).",
+        "fr": "Page 'Plans' avec carte 'Your current plan', bascule 'Monthly / Yearly (-20%)' et rangee de cartes (Vip, Free, Pro, Max). Chaque carte indique nom, prix (0EUR, 5EUR, 20EUR), periode, allocation de tokens (100M, 500K, 2M, 10M), niveau de support et bouton 'Choose plan' (grise pour le plan actuel)."
       },
       "description": {
-        "en": "View and manage your LLM subscription. Compare plans (Free, Pro, Enterprise), switch between monthly and yearly billing, and upgrade or downgrade your subscription.",
-        "fr": "Consultez et gerez votre abonnement LLM. Comparez les plans (Gratuit, Pro, Entreprise), basculez entre facturation mensuelle et annuelle, et mettez a niveau ou retrogradez."
+        "en": "View and manage your Cloud LLM subscription. Compare token-based plans (Vip, Free, Pro, Max), switch between monthly and yearly billing (yearly saves 20%), and upgrade or downgrade. Choosing a paid plan opens Stripe checkout.",
+        "fr": "Consultez et gerez votre abonnement Cloud LLM. Comparez les plans bases sur les tokens (Vip, Free, Pro, Max), basculez entre facturation mensuelle et annuelle (l'annuelle economise 20%), et mettez a niveau ou retrogradez. Le choix d'un plan payant ouvre Stripe checkout."
       },
       "sub_features": [
         {
@@ -93,12 +96,12 @@
             "fr": "Plans d'abonnement"
           },
           "visual": {
-            "en": "",
-            "fr": ""
+            "en": "Current plan banner (e.g. 'Vip'), a monthly/yearly billing toggle with a '-20%' badge on yearly, and four plan cards: Vip (0EUR, 100M tokens), Free (0EUR, 500K tokens, Community support), Pro (5EUR, 2M tokens, Priority support), and Max (20EUR, 10M tokens, Priority support). Each card has a 'Choose plan' action.",
+            "fr": "Banniere du plan actuel (ex. 'Vip'), bascule mensuel/annuel avec badge '-20%' sur l'annuel, et quatre cartes : Vip (0EUR, 100M tokens), Free (0EUR, 500K tokens, support communautaire), Pro (5EUR, 2M tokens, support prioritaire), Max (20EUR, 10M tokens, support prioritaire). Chaque carte propose 'Choose plan'."
           },
           "description": {
-            "en": "Current subscription display, monthly/yearly toggle, plan cards with price, token limits, features. Select plan to open Stripe checkout. Loading and error states.",
-            "fr": "Affichage de l'abonnement actuel, bascule mensuel/annuel, cartes de plans avec prix, limites de tokens, fonctionnalites. Selection pour ouvrir Stripe checkout."
+            "en": "Displays the current subscription, a monthly/yearly billing toggle, and plan cards (Vip, Free, Pro, Max) with price, token allowance, and support level. Selecting a plan opens Stripe checkout; loading and error states are handled inline.",
+            "fr": "Affiche l'abonnement actuel, une bascule de facturation mensuel/annuel et des cartes de plans (Vip, Free, Pro, Max) avec prix, allocation de tokens et niveau de support. La selection d'un plan ouvre Stripe checkout ; les etats de chargement et d'erreur sont geres en ligne."
           }
         }
       ]
@@ -110,12 +113,12 @@
         "fr": "Parametres"
       },
       "visual": {
-        "en": "",
-        "fr": ""
+        "en": "A simple 'Settings' page subtitled 'Manage your EDAMAME account password', containing a single 'Change password' card.",
+        "fr": "Page 'Settings' simple sous-titree 'Manage your EDAMAME account password', contenant une seule carte 'Change password'."
       },
       "description": {
-        "en": "Account settings including password change. Password validation with strength checker and requirements.",
-        "fr": "Parametres du compte incluant le changement de mot de passe. Validation avec controles de force et exigences."
+        "en": "Account settings for managing the EDAMAME account password. Provides a change-password form with validation.",
+        "fr": "Parametres du compte pour gerer le mot de passe du compte EDAMAME. Fournit un formulaire de changement de mot de passe avec validation."
       },
       "sub_features": [
         {
@@ -126,12 +129,12 @@
             "fr": "Parametres du compte"
           },
           "visual": {
-            "en": "",
-            "fr": ""
+            "en": "A 'Change password' card with three fields (Current password, New password, Confirm new password) and an 'Update password' button.",
+            "fr": "Carte 'Change password' avec trois champs (mot de passe actuel, nouveau, confirmation) et un bouton 'Update password'."
           },
           "description": {
-            "en": "Change password form. Current password, new password, confirm password fields. Password strength checker (lowercase, uppercase, number, special char, length). Validation and error handling.",
-            "fr": "Formulaire de changement de mot de passe. Champs mot de passe actuel, nouveau, confirmation. Controleur de force du mot de passe."
+            "en": "Change-password form with Current password, New password, and Confirm new password fields plus an Update password action. New passwords are validated for strength (length and character classes) with inline error handling.",
+            "fr": "Formulaire de changement de mot de passe avec les champs mot de passe actuel, nouveau et confirmation, ainsi qu'un bouton Update password. Les nouveaux mots de passe sont valides (longueur et classes de caracteres) avec gestion des erreurs en ligne."
           }
         }
       ]
@@ -143,12 +146,12 @@
         "fr": "Cles API"
       },
       "visual": {
-        "en": "",
-        "fr": ""
+        "en": "An 'API Keys' page subtitled for headless CLI authentication, with a 'Create API Key' button and a grid of key cards. Each card shows a name (e.g. 'github ci/cd', 'test', 'ci/cd'), an 'Active' badge, a masked key prefix (edm_live_...), a created date, and a last-used value.",
+        "fr": "Page 'API Keys' pour l'authentification CLI headless, avec un bouton 'Create API Key' et une grille de cartes de cles. Chaque carte indique un nom (ex. 'github ci/cd', 'test', 'ci/cd'), un badge 'Active', un prefixe masque (edm_live_...), une date de creation et la derniere utilisation."
       },
       "description": {
-        "en": "Create and manage API keys for headless environments, CLI tools, and automation. Create keys with custom names, copy keys on creation (shown once), and revoke keys when no longer needed.",
-        "fr": "Creez et gerez des cles API pour les environnements headless, outils CLI et automatisation. Creez des cles avec des noms personnalises, copiez-les a la creation (affichage unique), et revoquez-les si necessaire."
+        "en": "Create and manage API keys for headless environments, CLI tools, and automation (used instead of OAuth when running edamame_posture in CI/CD). Create keys with custom names, copy the full key once at creation, and revoke keys when no longer needed.",
+        "fr": "Creez et gerez des cles API pour les environnements headless, outils CLI et automatisation (utilisees a la place d'OAuth pour executer edamame_posture en CI/CD). Creez des cles avec des noms personnalises, copiez la cle complete une seule fois a la creation, et revoquez-les si necessaire."
       },
       "sub_features": [
         {
@@ -159,13 +162,78 @@
             "fr": "Gestion des cles API"
           },
           "visual": {
-            "en": "",
-            "fr": ""
+            "en": "Header with 'API Keys' title, descriptive subtitle, and a 'Create API Key' button. Existing keys are shown as cards with name, 'Active' status badge, masked key prefix (edm_live_...), created date, and last-used date; a newly created key is revealed once with a copy button.",
+            "fr": "En-tete avec titre 'API Keys', sous-titre descriptif et bouton 'Create API Key'. Les cles existantes sont affichees en cartes avec nom, badge 'Active', prefixe masque (edm_live_...), date de creation et derniere utilisation ; une cle nouvellement creee est revelee une seule fois avec un bouton de copie."
           },
           "description": {
-            "en": "Create API key button. Modal for key name. List of existing keys with name, created date, copy and delete actions. One-time key display after creation with copy button. Warning when revoking.",
-            "fr": "Bouton creer cle API. Modale pour le nom. Liste des cles existantes avec nom, date creation, actions copier et supprimer. Affichage unique de la cle apres creation."
+            "en": "Create an API key (named via a modal), view existing keys as cards with name, status, masked prefix, created date, and last-used date, and copy or delete keys. The full key is shown only once at creation, with a warning when revoking.",
+            "fr": "Creez une cle API (nommee via une modale), consultez les cles existantes en cartes avec nom, statut, prefixe masque, date de creation et derniere utilisation, et copiez ou supprimez les cles. La cle complete n'est affichee qu'une seule fois a la creation, avec un avertissement lors de la revocation."
           }
+        }
+      ]
+    },
+    {
+      "name": "notifications",
+      "title": {
+        "en": "Notifications",
+        "fr": "Notifications"
+      },
+      "visual": {
+        "en": "A dark 'Notifications' page listing the security notifications generated by the user's devices over the last 24 hours. A filter toolbar at the top shows the notification count and a refresh button, a device dropdown ('All Devices' plus each registered device), a 'Criticality' row of pills (All, Info, Warning, Critical) and a 'Type' row of pills (All, Action Report, Escalation, Vulnerability, Divergence). Below is a vertical list of expandable cards, each with a criticality-colored left border (green/orange/red), an icon, a title, the source, hostname and security score (X.X/5), a relative timestamp (e.g. '5m ago') and a chevron. Action reports and escalations show Auto-resolved/Confirmation/Escalated/Failed count pills; vulnerabilities show a findings badge. A pagination footer offers a rows-per-page selector (10/20/50) and 'page X of Y' with prev/next chevrons. When there are no notifications, a shield icon and an empty-state message are shown.",
+        "fr": "Page sombre 'Notifications' listant les notifications de securite generees par les appareils de l'utilisateur sur les dernieres 24 heures. Une barre de filtres en haut affiche le compteur de notifications et un bouton d'actualisation, un menu deroulant d'appareils ('All Devices' plus chaque appareil), une rangee de pills 'Criticality' (All, Info, Warning, Critical) et une rangee 'Type' (All, Action Report, Escalation, Vulnerability, Divergence). En dessous, une liste verticale de cartes depliables, chacune avec une bordure gauche coloree selon la criticite (vert/orange/rouge), une icone, un titre, la source, le nom d'hote et le score de securite (X.X/5), un horodatage relatif (ex. '5m ago') et un chevron. Les rapports d'action et escalades affichent des pills Auto-resolved/Confirmation/Escalated/Failed ; les vulnerabilites affichent un badge de findings. Un pied de pagination propose un selecteur de lignes par page (10/20/50) et 'page X of Y' avec chevrons precedent/suivant. En l'absence de notifications, une icone bouclier et un message d'etat vide sont affiches."
+      },
+      "description": {
+        "en": "Browse the security notifications produced by your devices over the last 24 hours. Filter by device, by criticality (Info, Warning, Critical), and by source type (action report, escalation, vulnerability, divergence). Each card expands to reveal the full message plus the underlying remediation actions (with result status and risk score) and security findings (with severity and reference). Results are paginated with a configurable page size.",
+        "fr": "Parcourez les notifications de securite produites par vos appareils sur les dernieres 24 heures. Filtrez par appareil, par criticite (Info, Warning, Critical) et par type de source (rapport d'action, escalade, vulnerabilite, divergence). Chaque carte se deplie pour reveler le message complet ainsi que les actions de remediation sous-jacentes (avec statut et score de risque) et les findings de securite (avec severite et reference). Les resultats sont pagines avec une taille de page configurable."
+      },
+      "sub_features": [
+        {
+          "name": "notifications_main",
+          "path": "portal/notifications",
+          "title": {
+            "en": "Device Security Notifications",
+            "fr": "Notifications de securite des appareils"
+          },
+          "visual": {
+            "en": "Filter toolbar (notification count + refresh, device dropdown, Criticality pills All/Info/Warning/Critical, Type pills All/Action Report/Escalation/Vulnerability/Divergence) above a list of expandable notification cards. Each card shows a criticality-colored left border and icon, title, source label, hostname, security score (X.X/5) and a time-ago label; expanding it reveals the full message body plus Actions (description, result status badge, risk %) and Findings (description, severity badge, reference). A pagination footer provides rows-per-page (10/20/50) and page X of Y navigation.",
+            "fr": "Barre de filtres (compteur + actualisation, menu d'appareils, pills Criticality All/Info/Warning/Critical, pills Type All/Action Report/Escalation/Vulnerability/Divergence) au-dessus d'une liste de cartes depliables. Chaque carte affiche une bordure gauche et une icone colorees selon la criticite, un titre, la source, le nom d'hote, le score de securite (X.X/5) et un horodatage relatif ; depliee, elle revele le corps complet du message ainsi que les Actions (description, badge de statut, % de risque) et les Findings (description, badge de severite, reference). Un pied de pagination fournit lignes par page (10/20/50) et navigation page X of Y."
+          },
+          "description": {
+            "en": "Lists device security notifications from the last 24 hours with device, criticality, and type filters. Each card summarizes a notification (source, hostname, security score, timestamp) and expands to show its full message, remediation actions with status and risk score, and findings with severity. The list is paginated with a selectable page size (10/20/50).",
+            "fr": "Liste les notifications de securite des appareils sur les dernieres 24 heures avec filtres par appareil, criticite et type. Chaque carte resume une notification (source, nom d'hote, score de securite, horodatage) et se deplie pour afficher son message complet, les actions de remediation avec statut et score de risque, et les findings avec severite. La liste est paginee avec une taille de page selectionnable (10/20/50)."
+          },
+          "items": [
+            {
+              "name": "criticality_levels",
+              "title": {
+                "en": "Criticality levels",
+                "fr": "Niveaux de criticite"
+              },
+              "visual": {
+                "en": "Each notification is tagged INFO (green shield), WARNING (orange triangle) or CRITICAL (red circle); the same color drives the card's left border and icon as well as the criticality filter pills.",
+                "fr": "Chaque notification est marquee INFO (bouclier vert), WARNING (triangle orange) ou CRITICAL (cercle rouge) ; la meme couleur pilote la bordure gauche et l'icone de la carte ainsi que les pills de filtre de criticite."
+              },
+              "description": {
+                "en": "Notifications are classified by criticality (Info, Warning, Critical), which sets the card accent color and can be used to filter the list.",
+                "fr": "Les notifications sont classees par criticite (Info, Warning, Critical), ce qui definit la couleur d'accent de la carte et permet de filtrer la liste."
+              }
+            },
+            {
+              "name": "notification_types",
+              "title": {
+                "en": "Notification types",
+                "fr": "Types de notification"
+              },
+              "visual": {
+                "en": "Type pills and per-card icons distinguish Action Report, Escalation, Vulnerability and Divergence notifications; reports and escalations display Auto-resolved/Confirmation/Escalated/Failed counts, while vulnerabilities show a findings badge and optional verdict.",
+                "fr": "Les pills de type et les icones par carte distinguent les notifications Action Report, Escalation, Vulnerability et Divergence ; les rapports et escalades affichent les compteurs Auto-resolved/Confirmation/Escalated/Failed, tandis que les vulnerabilites montrent un badge de findings et un verdict optionnel."
+              },
+              "description": {
+                "en": "Notifications come from four sources: action reports and escalations (summarizing remediation actions via auto-resolved, confirmation, escalated and failed counts), vulnerabilities (listing findings with severity and reference), and divergences. The list can be filtered by any of these types.",
+                "fr": "Les notifications proviennent de quatre sources : rapports d'action et escalades (resumant les actions de remediation via les compteurs auto-resolved, confirmation, escalated et failed), vulnerabilites (listant les findings avec severite et reference) et divergences. La liste peut etre filtree par l'un de ces types."
+              }
+            }
+          ]
         }
       ]
     }

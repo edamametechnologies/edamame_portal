@@ -10,9 +10,10 @@ EDAMAME Portal is the subscription and device management interface for EDAMAME S
 
 ## Key Features
 
-- **Home** — Device overview, usage metrics (tokens, threats, policies, network, traffic, identity), device registration
-- **Plans** — Subscription tiers (Free, Pro, Enterprise), monthly/yearly billing, upgrade/downgrade
+- **Home** — Device overview, Cloud LLM usage metrics (tokens, threats, policies, network, traffic, identity), device registration
+- **Plans** — Subscription tiers (Vip, Free, Pro, Max), monthly/yearly billing, upgrade/downgrade
 - **API Keys** — Create, list, and revoke API keys for headless/CLI access
+- **Notifications** — Device security notifications (action reports, escalations, vulnerabilities, divergences) with filters
 - **Settings** — Change password, account preferences
 
 ## Feature Wiki
@@ -21,17 +22,36 @@ Full feature descriptions with screenshots: [github.com/edamametechnologies/edam
 
 ## Screenshot Generation
 
-Screenshots are captured **manually on your machine** (Playwright against
-production). CI only rebuilds the wiki from committed PNGs.
+### Automatic (CI)
+
+The **Generate Portal Screenshots** workflow (`.github/workflows/screenshots.yml`)
+captures every page from production using the **demo account**, then rebuilds and
+republishes the feature wiki. It runs on a weekly schedule and on demand
+(Actions → *Generate Portal Screenshots* → *Run workflow*).
+
+Required repository **secrets**:
+
+| Secret | Purpose |
+|--------|---------|
+| `PORTAL_SCREENSHOT_EMAIL` | Demo account email (`demo@edamame.tech`) |
+| `PORTAL_SCREENSHOT_PASSWORD` | Demo account password |
+| `DEV_GITHUB_TOKEN` | PAT with repo + wiki write access (already used by the wiki workflow) |
+
+Posture gating reuses the existing `EDAMAME_POSTURE_*` secrets/vars.
+
+### Manual (local)
 
 ```bash
 pip install -r requirements.txt
 playwright install chromium
 
-# First run: log in interactively to save auth state
-python src/generate_screenshots.py --login
+# Unattended — log in with the demo account (same path as CI)
+PORTAL_SCREENSHOT_EMAIL=demo@edamame.tech \
+PORTAL_SCREENSHOT_PASSWORD=... \
+python src/generate_screenshots.py --headless
 
-# Subsequent runs: reuse saved auth
+# Or interactively (saves the session in a persistent profile for reuse)
+python src/generate_screenshots.py --login
 python src/generate_screenshots.py
 
 # Commit PNGs, then push — feature-wiki.yml updates the GitHub wiki
@@ -53,6 +73,7 @@ python src/build_feature_wiki.py --screenshots-dir screenshots --output-dir wiki
 │   ├── generate_screenshots.py
 │   └── build_feature_wiki.py
 ├── .github/workflows/
-│   └── feature-wiki.yml
+│   ├── feature-wiki.yml     # rebuilds wiki from committed PNGs (on push)
+│   └── screenshots.yml      # captures screenshots (demo account) + republishes wiki
 └── requirements.txt
 ```

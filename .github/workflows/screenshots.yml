@@ -1,0 +1,96 @@
+name: Generate Portal Screenshots
+
+# Captures Portal screenshots from production using the demo account, then
+# rebuilds and republishes the feature wiki. The refreshed PNGs are also
+# committed back to the repo (best-effort) so the manual flow stays in sync.
+#
+# Required configuration:
+#   secrets.PORTAL_SCREENSHOT_EMAIL     demo account email (demo@edamame.tech)
+#   secrets.PORTAL_SCREENSHOT_PASSWORD  demo account password
+#   secrets.DEV_GITHUB_TOKEN            PAT with repo + wiki write access
+#   secrets.EDAMAME_POSTURE_PIN / vars.EDAMAME_POSTURE_USER / vars.EDAMAME_POSTURE_DOMAIN
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekly — Monday 06:00 UTC
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: write
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup EDAMAME Posture
+        uses: edamametechnologies/edamame_posture_action@v1
+        with:
+          edamame_user: ${{ vars.EDAMAME_POSTURE_USER }}
+          edamame_domain: ${{ vars.EDAMAME_POSTURE_DOMAIN }}
+          edamame_pin: ${{ secrets.EDAMAME_POSTURE_PIN }}
+          edamame_id: ${{ github.run_id }}
+          checkout: true
+          wait_for_api: true
+          wait_for_https: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Capture screenshots (demo account)
+        env:
+          PORTAL_SCREENSHOT_EMAIL: ${{ secrets.PORTAL_SCREENSHOT_EMAIL }}
+          PORTAL_SCREENSHOT_PASSWORD: ${{ secrets.PORTAL_SCREENSHOT_PASSWORD }}
+        run: python src/generate_screenshots.py --headless
+
+      - name: Generate wiki markdown files
+        run: |
+          python src/build_feature_wiki.py \
+            --screenshots-dir screenshots \
+            --output-dir wiki
+
+      - name: Clone wiki
+        run: |
+          mkdir -p /tmp/wiki/
+          git clone https://${{ secrets.DEV_GITHUB_TOKEN }}@github.com/edamametechnologies/edamame_portal.wiki.git /tmp/wiki
+
+      - name: Copy generated markdown files and images
+        run: |
+          cp wiki/*.md /tmp/wiki/
+          mkdir -p /tmp/wiki/images
+          cp -r wiki/images/* /tmp/wiki/images/ 2>/dev/null || true
+
+      - name: Push to wiki
+        run: |
+          cd /tmp/wiki
+          git config --global user.email "dev@edamame.tech"
+          git config --global user.name "EDAMAME Dev"
+          git add .
+          if git commit -m "docs: refresh wiki from Portal screenshots"; then
+            echo "Changes committed, pushing to wiki..."
+            git push
+          else
+            echo "No changes to commit to wiki."
+          fi
+
+      - name: Commit refreshed screenshots (best-effort)
+        continue-on-error: true
+        run: |
+          git config user.email "dev@edamame.tech"
+          git config user.name "EDAMAME Dev"
+          git remote set-url origin https://x-access-token:${{ secrets.DEV_GITHUB_TOKEN }}@github.com/edamametechnologies/edamame_portal.git
+          git add screenshots/
+          if git diff --cached --quiet; then
+            echo "No screenshot changes."
+          else
+            git commit -m "docs: refresh Portal screenshots [skip ci]"
+            git push origin HEAD:main
+          fi
