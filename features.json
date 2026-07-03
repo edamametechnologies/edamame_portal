@@ -237,5 +237,228 @@
         }
       ]
     }
+  ],
+  "workflows": [
+    {
+      "name": "register_device",
+      "feature": "home",
+      "title": {
+        "en": "Register a device",
+        "fr": "Enregistrer un appareil"
+      },
+      "description": {
+        "en": "Step-by-step guide to registering a device on the Portal home page so it appears in the device selector and reports Cloud LLM usage. This walkthrough opens the 'Register device' modal and fills in the device ID but stops before saving, so it is safe to run against the live demo account.",
+        "fr": "Guide etape par etape pour enregistrer un appareil depuis la page d'accueil du Portal afin qu'il apparaisse dans le selecteur d'appareils et remonte l'utilisation Cloud LLM. Ce tutoriel ouvre la modale 'Register device' et remplit l'identifiant de l'appareil mais s'arrete avant l'enregistrement, il est donc sans risque sur le compte de demonstration."
+      },
+      "steps": [
+        {
+          "name": "open_home",
+          "path": "portal/home",
+          "title": {
+            "en": "Open the Home page",
+            "fr": "Ouvrir la page d'accueil"
+          },
+          "instruction": {
+            "en": "Open the Home page. The 'Devices' card lists your registered devices; use the 'Add device' button (highlighted) in its top-right corner to register a new one.",
+            "fr": "Ouvrez la page d'accueil. La carte 'Devices' liste vos appareils enregistres ; utilisez le bouton 'Add device' (en surbrillance) en haut a droite pour en enregistrer un nouveau."
+          },
+          "highlight": "button:text-is('Add device')"
+        },
+        {
+          "name": "open_add_modal",
+          "path": "portal/home",
+          "title": {
+            "en": "Open the register device modal",
+            "fr": "Ouvrir la modale d'enregistrement"
+          },
+          "instruction": {
+            "en": "Click 'Add device'. The 'Register device' modal opens with the device ID field (required, highlighted), an optional device name, and a device type (Mac, Windows, Linux, Server, Unknown).",
+            "fr": "Cliquez sur 'Add device'. La modale 'Register device' s'ouvre avec le champ identifiant de l'appareil (obligatoire, en surbrillance), un nom optionnel et un type (Mac, Windows, Linux, Server, Unknown)."
+          },
+          "actions": [
+            { "type": "click", "selector": "button:text-is('Add device')" },
+            { "type": "wait", "ms": 800 }
+          ],
+          "highlight": "input[placeholder='e.g. server-01-a5b7']"
+        },
+        {
+          "name": "fill_device_id",
+          "path": "",
+          "title": {
+            "en": "Enter the device details",
+            "fr": "Saisir les details de l'appareil"
+          },
+          "instruction": {
+            "en": "Type the unique device ID (at least 3 characters, ASCII only, no spaces) and an optional name, then choose the device type. Click 'Register device' (highlighted) to save it. This walkthrough stops before saving.",
+            "fr": "Saisissez l'identifiant unique de l'appareil (au moins 3 caracteres, ASCII uniquement, sans espaces) et un nom optionnel, puis choisissez le type. Cliquez sur 'Register device' (en surbrillance) pour l'enregistrer. Ce tutoriel s'arrete avant l'enregistrement."
+          },
+          "actions": [
+            { "type": "fill", "selector": "input[placeholder='e.g. server-01-a5b7']", "value": "demo-device-a5b7" }
+          ],
+          "highlight": "button:text-is('Register device')"
+        }
+      ]
+    },
+    {
+      "name": "create_api_key",
+      "feature": "apikeys",
+      "title": {
+        "en": "Create an API key",
+        "fr": "Creer une cle API"
+      },
+      "description": {
+        "en": "Step-by-step guide to creating an API key for headless CLI and CI/CD authentication (used instead of OAuth when running edamame_posture in automation). This walkthrough opens the 'Create New API Key' modal and names the key but stops before creating it, so it is safe to run against the live demo account.",
+        "fr": "Guide etape par etape pour creer une cle API destinee a l'authentification CLI headless et CI/CD (utilisee a la place d'OAuth pour executer edamame_posture en automatisation). Ce tutoriel ouvre la modale 'Create New API Key' et nomme la cle mais s'arrete avant de la creer, il est donc sans risque sur le compte de demonstration."
+      },
+      "steps": [
+        {
+          "name": "open_apikeys",
+          "path": "portal/api-keys",
+          "title": {
+            "en": "Open the API Keys page",
+            "fr": "Ouvrir la page API Keys"
+          },
+          "instruction": {
+            "en": "Open the API Keys page from the sidebar. Existing keys are shown as cards with a masked prefix, created date, and last-used date. Click 'Create API Key' (highlighted) to add a new one.",
+            "fr": "Ouvrez la page API Keys depuis la barre laterale. Les cles existantes sont affichees en cartes avec un prefixe masque, une date de creation et une derniere utilisation. Cliquez sur 'Create API Key' (en surbrillance) pour en ajouter une nouvelle."
+          },
+          "highlight": "button:text-is('Create API Key')"
+        },
+        {
+          "name": "open_create_modal",
+          "path": "portal/api-keys",
+          "title": {
+            "en": "Open the create key modal",
+            "fr": "Ouvrir la modale de creation de cle"
+          },
+          "instruction": {
+            "en": "Click 'Create API Key'. The 'Create New API Key' modal opens and asks for a descriptive name (highlighted) so you can identify the key later.",
+            "fr": "Cliquez sur 'Create API Key'. La modale 'Create New API Key' s'ouvre et demande un nom descriptif (en surbrillance) pour identifier la cle ulterieurement."
+          },
+          "actions": [
+            { "type": "click", "selector": "button:text-is('Create API Key')" },
+            { "type": "wait", "ms": 800 }
+          ],
+          "highlight": "input[placeholder='e.g., CI/CD Pipeline']"
+        },
+        {
+          "name": "name_key",
+          "path": "",
+          "title": {
+            "en": "Name and create the key",
+            "fr": "Nommer et creer la cle"
+          },
+          "instruction": {
+            "en": "Enter a descriptive name (e.g. 'CI/CD Pipeline') and click 'Create Key' (highlighted). The full key is shown only once, so copy it immediately with the copy button. This walkthrough stops before creating the key.",
+            "fr": "Saisissez un nom descriptif (ex. 'CI/CD Pipeline') et cliquez sur 'Create Key' (en surbrillance). La cle complete n'est affichee qu'une seule fois, copiez-la donc immediatement avec le bouton de copie. Ce tutoriel s'arrete avant la creation de la cle."
+          },
+          "actions": [
+            { "type": "fill", "selector": "input[placeholder='e.g., CI/CD Pipeline']", "value": "demo-ci-key" }
+          ],
+          "highlight": "button:text-is('Create Key')"
+        }
+      ]
+    },
+    {
+      "name": "choose_plan",
+      "feature": "subscribe",
+      "title": {
+        "en": "Choose a subscription plan",
+        "fr": "Choisir un plan d'abonnement"
+      },
+      "description": {
+        "en": "Step-by-step guide to comparing Cloud LLM plans and switching between monthly and yearly billing (yearly saves 20%). Choosing a paid plan opens Stripe checkout in a new tab; this walkthrough only toggles billing and highlights the plan action, so it is safe to run against the live demo account.",
+        "fr": "Guide etape par etape pour comparer les plans Cloud LLM et basculer entre facturation mensuelle et annuelle (l'annuelle economise 20%). Le choix d'un plan payant ouvre Stripe checkout dans un nouvel onglet ; ce tutoriel se contente de basculer la facturation et de mettre en surbrillance l'action du plan, il est donc sans risque sur le compte de demonstration."
+      },
+      "steps": [
+        {
+          "name": "open_plans",
+          "path": "portal/subscribe",
+          "title": {
+            "en": "Open the Plans page",
+            "fr": "Ouvrir la page Plans"
+          },
+          "instruction": {
+            "en": "Open the Plans page. The 'Your current plan' card shows your active subscription; below it a monthly/yearly billing toggle (highlighted) and a row of plan cards (Vip, Free, Pro, Max) list price, token allowance, and support level.",
+            "fr": "Ouvrez la page Plans. La carte 'Your current plan' affiche votre abonnement actif ; en dessous, une bascule mensuel/annuel (en surbrillance) et une rangee de cartes (Vip, Free, Pro, Max) indiquent prix, allocation de tokens et niveau de support."
+          },
+          "highlight": "button:has-text('Monthly')"
+        },
+        {
+          "name": "toggle_yearly",
+          "path": "portal/subscribe",
+          "title": {
+            "en": "Switch to yearly billing",
+            "fr": "Basculer sur la facturation annuelle"
+          },
+          "instruction": {
+            "en": "Click 'Yearly' in the billing toggle (highlighted) to see annual prices, which save 20% compared with monthly billing. The plan cards update their prices accordingly.",
+            "fr": "Cliquez sur 'Yearly' dans la bascule de facturation (en surbrillance) pour voir les prix annuels, qui economisent 20% par rapport au mensuel. Les cartes de plans mettent a jour leurs prix en consequence."
+          },
+          "actions": [
+            { "type": "click", "selector": "button:has-text('Yearly')" },
+            { "type": "wait", "ms": 800 }
+          ],
+          "highlight": "button:has-text('Yearly')"
+        },
+        {
+          "name": "highlight_choose_plan",
+          "path": "",
+          "title": {
+            "en": "Choose a plan",
+            "fr": "Choisir un plan"
+          },
+          "instruction": {
+            "en": "Click 'Choose plan' (highlighted) on the plan you want. For paid plans this opens Stripe checkout in a new tab; if you already have a paid plan, use 'Manage plan' at the top instead. This walkthrough stops before opening checkout.",
+            "fr": "Cliquez sur 'Choose plan' (en surbrillance) sur le plan souhaite. Pour les plans payants, cela ouvre Stripe checkout dans un nouvel onglet ; si vous avez deja un plan payant, utilisez plutot 'Manage plan' en haut. Ce tutoriel s'arrete avant l'ouverture de checkout."
+          },
+          "highlight": "button:text-is('Choose plan')"
+        }
+      ]
+    },
+    {
+      "name": "filter_notifications",
+      "feature": "notifications",
+      "title": {
+        "en": "Filter device notifications",
+        "fr": "Filtrer les notifications des appareils"
+      },
+      "description": {
+        "en": "Step-by-step guide to browsing and filtering the security notifications produced by your devices over the last 24 hours. Filtering is read-only, so this walkthrough is safe to run end-to-end against the live demo account.",
+        "fr": "Guide etape par etape pour parcourir et filtrer les notifications de securite produites par vos appareils sur les dernieres 24 heures. Le filtrage est en lecture seule, ce tutoriel est donc sans risque de bout en bout sur le compte de demonstration."
+      },
+      "steps": [
+        {
+          "name": "open_notifications",
+          "path": "portal/notifications",
+          "title": {
+            "en": "Open the Notifications page",
+            "fr": "Ouvrir la page Notifications"
+          },
+          "instruction": {
+            "en": "Open the Notifications page from the sidebar. A filter toolbar at the top shows the notification count and refresh button, a device dropdown, a 'Criticality' row of pills (All (highlighted), Info, Warning, Critical) and a 'Type' row of pills (All, Action Report, Escalation, Vulnerability, Divergence).",
+            "fr": "Ouvrez la page Notifications depuis la barre laterale. Une barre de filtres en haut affiche le compteur et le bouton d'actualisation, un menu deroulant d'appareils, une rangee de pills 'Criticality' (All (en surbrillance), Info, Warning, Critical) et une rangee 'Type' (All, Action Report, Escalation, Vulnerability, Divergence)."
+          },
+          "highlight": "button:text-is('All')"
+        },
+        {
+          "name": "filter_critical",
+          "path": "portal/notifications",
+          "title": {
+            "en": "Filter by criticality",
+            "fr": "Filtrer par criticite"
+          },
+          "instruction": {
+            "en": "Click the 'Critical' criticality pill (highlighted) to show only critical notifications. The list re-filters instantly; combine it with the Type pills and the device dropdown to narrow results further. Each card expands to reveal the full message, remediation actions, and findings.",
+            "fr": "Cliquez sur la pill de criticite 'Critical' (en surbrillance) pour n'afficher que les notifications critiques. La liste se refiltre instantanement ; combinez-la avec les pills de Type et le menu d'appareils pour affiner davantage. Chaque carte se deplie pour reveler le message complet, les actions de remediation et les findings."
+          },
+          "actions": [
+            { "type": "click", "selector": "button:text-is('Critical')" },
+            { "type": "wait", "ms": 800 }
+          ],
+          "highlight": "button:text-is('Critical')"
+        }
+      ]
+    }
   ]
 }

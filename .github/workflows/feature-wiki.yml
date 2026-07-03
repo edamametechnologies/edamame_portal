@@ -1,9 +1,23 @@
 name: Update Features Wiki
 
+# Captures Portal screenshots (features + workflows) from production using the
+# demo account, then rebuilds and republishes the feature wiki — all in one job,
+# like edamame_hub. Live capture is best-effort: if it fails (e.g. login/MFA),
+# the wiki still builds from any screenshots already committed to the repo.
+#
+# Required configuration:
+#   secrets.PORTAL_SCREENSHOT_EMAIL     demo account email (demo@edamame.tech)
+#   secrets.PORTAL_SCREENSHOT_PASSWORD  demo account password
+#   secrets.DEV_GITHUB_TOKEN            PAT with repo + wiki write access
+#   secrets.EDAMAME_POSTURE_PIN / vars.EDAMAME_POSTURE_USER / vars.EDAMAME_POSTURE_DOMAIN
+
 on:
   push:
     branches: ["main"]
   workflow_dispatch:
+  schedule:
+    # Weekly refresh so screenshots stay current even without pushes.
+    - cron: "0 4 * * 1"
 
 jobs:
   build-wiki:
@@ -27,7 +41,19 @@ jobs:
           python-version: "3.11"
 
       - name: Install Python dependencies
-        run: pip install mdutils
+        run: pip install -r requirements.txt
+
+      - name: Install Playwright browser
+        run: python -m playwright install --with-deps chromium
+
+      - name: Capture screenshots (features + workflows)
+        # Non-blocking: if live capture fails (e.g. login/MFA), the wiki still
+        # builds from any screenshots already committed to the repo.
+        continue-on-error: true
+        env:
+          PORTAL_SCREENSHOT_EMAIL: ${{ secrets.PORTAL_SCREENSHOT_EMAIL }}
+          PORTAL_SCREENSHOT_PASSWORD: ${{ secrets.PORTAL_SCREENSHOT_PASSWORD }}
+        run: python src/generate_screenshots.py --headless
 
       - name: Generate wiki markdown files
         run: |
@@ -58,4 +84,18 @@ jobs:
           else
             echo "No changes to commit to wiki."
             exit 0
+          fi
+
+      - name: Commit refreshed screenshots (best-effort)
+        continue-on-error: true
+        run: |
+          git config user.email "dev@edamame.tech"
+          git config user.name "EDAMAME Dev"
+          git remote set-url origin https://x-access-token:${{ secrets.DEV_GITHUB_TOKEN }}@github.com/edamametechnologies/edamame_portal.git
+          git add screenshots/
+          if git diff --cached --quiet; then
+            echo "No screenshot changes."
+          else
+            git commit -m "docs: refresh Portal screenshots [skip ci]"
+            git push origin HEAD:main
           fi

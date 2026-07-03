@@ -66,6 +66,10 @@ def is_logged_in(page: Page, base_url: str) -> bool:
     return base_url in url and "/portal/" in url and "/auth/" not in url
 
 
+def is_on_login_page(page: Page) -> bool:
+    return "/auth/" in page.url or "login" in page.url
+
+
 def programmatic_login(page: Page, base_url: str, email: str, password: str) -> bool:
     """Log in with email/password via the Portal login form (headless-friendly)."""
     print("Logging in with email/password...")
@@ -132,9 +136,161 @@ def ensure_logged_in(
     return True
 
 
-def capture(page: Page, output_path: Path):
+def dismiss_overlays(page: Page):
+    """Close stray popups (toasts, welcome/tour modals) before capturing."""
+    for selector in [
+        "[aria-label='Close']",
+        "button:has-text('Close')",
+        "button:has-text('Dismiss')",
+        ".chakra-modal__close-btn",
+    ]:
+        try:
+            el = page.query_selector(selector)
+            if el and el.is_visible():
+                el.click()
+                page.wait_for_timeout(500)
+        except Exception:
+            pass
+
+
+def capture(page: Page, output_path: Path, dismiss: bool = True):
+    if dismiss:
+        dismiss_overlays(page)
     page.screenshot(path=str(output_path), full_page=True)
     print(f"    -> {output_path.name}")
+
+
+HIGHLIGHT_JS = """el => {
+  el.setAttribute('data-wf-highlight', '1');
+  el.dataset.wfPrevOutline = el.style.outline || '';
+  el.dataset.wfPrevOffset = el.style.outlineOffset || '';
+  el.dataset.wfPrevShadow = el.style.boxShadow || '';
+  el.style.outline = '4px solid #ff2d2d';
+  el.style.outlineOffset = '3px';
+  el.style.boxShadow = '0 0 0 6px rgba(255, 45, 45, 0.35)';
+}"""
+
+CLEAR_HIGHLIGHT_JS = """() => {
+  const el = document.querySelector('[data-wf-highlight]');
+  if (!el) return;
+  el.style.outline = el.dataset.wfPrevOutline || '';
+  el.style.outlineOffset = el.dataset.wfPrevOffset || '';
+  el.style.boxShadow = el.dataset.wfPrevShadow || '';
+  el.removeAttribute('data-wf-highlight');
+}"""
+
+
+def apply_highlight(page: Page, selector: str) -> bool:
+    """Draw a red rectangle around the element to focus the reader's attention.
+
+    Uses Playwright's selector engine so text selectors (e.g. has-text) work in
+    addition to plain CSS.
+    """
+    try:
+        el = page.query_selector(selector)
+        if not el or not el.is_visible():
+            return False
+        el.scroll_into_view_if_needed()
+        el.evaluate(HIGHLIGHT_JS)
+        return True
+    except Exception:
+        return False
+
+
+def clear_highlight(page: Page):
+    try:
+        page.evaluate(CLEAR_HIGHLIGHT_JS)
+    except Exception:
+        pass
+
+
+def run_action(page: Page, base_url: str, action: dict):
+    """Run a single non-destructive workflow action.
+
+    Supported types: goto, click, fill, wait. There is deliberately no
+    'submit' type so captured workflows never trigger destructive operations.
+    """
+    action_type = action.get("type")
+    if action_type == "goto":
+        path = action.get("path", "")
+        page.goto(f"{base_url}/{path}", wait_until="domcontentloaded")
+        wait_for_page_ready(page)
+    elif action_type == "click":
+        el = page.query_selector(action["selector"])
+        if el and el.is_visible():
+            el.click()
+            page.wait_for_timeout(500)
+    elif action_type == "fill":
+        el = page.query_selector(action["selector"])
+        if el and el.is_visible():
+            el.fill(action.get("value", ""))
+    elif action_type == "wait":
+        page.wait_for_timeout(int(action.get("ms", 1000)))
+    else:
+        print(f"    WARN: unknown action type '{action_type}', skipping")
+
+
+def capture_workflows(page: Page, base_url: str, workflows: list, output_dir: Path):
+    """Capture one screenshot per workflow step, fully driven by features.json.
+
+    Adding/editing/removing a workflow or step needs no code change here.
+    Each step is isolated: a broken selector logs a WARN and never aborts the run.
+    """
+    if not workflows:
+        return
+
+    print(f"\nCapturing {len(workflows)} workflows...\n")
+    for wf in workflows:
+        wf_name = wf.get("name", "workflow")
+        print(f"[workflow: {wf_name}] {wf.get('title', {}).get('en', '')}")
+
+        for i, step in enumerate(wf.get("steps", []), 1):
+            step_name = step.get("name", f"step{i}")
+            path = step.get("path", "") or ""
+            filename = f"wf_{wf_name}_{i:02d}_{step_name}.png"
+            out = output_dir / filename
+
+            # A dynamic path (contains {...}) can't be resolved statically.
+            if path and "{" in path:
+                print(f"  {step_name}: skipped (dynamic param: {path})")
+                continue
+
+            try:
+                # An empty path means "stay on the current page" so multi-click
+                # flows (e.g. open -> fill) keep their state.
+                if path:
+                    url = f"{base_url}/{path}"
+                    print(f"  {step_name}: {url}")
+                    page.goto(url, wait_until="domcontentloaded")
+                    wait_for_page_ready(page)
+
+                    if is_on_login_page(page):
+                        print("    WARN: Redirected to login. Session may have expired.")
+                        continue
+                else:
+                    print(f"  {step_name}: (continue on current page)")
+
+                # Clear stray popups (welcome, toasts) BEFORE running actions so
+                # an intentional modal opened by the actions survives the shot.
+                dismiss_overlays(page)
+
+                for action in step.get("actions", []):
+                    run_action(page, base_url, action)
+
+                highlighted = False
+                highlight = step.get("highlight")
+                if highlight:
+                    highlighted = apply_highlight(page, highlight)
+                    if not highlighted:
+                        print(f"    WARN: highlight target not found: {highlight}")
+
+                # dismiss=False: keep modals/popovers the step intentionally opened.
+                capture(page, out, dismiss=False)
+
+                if highlighted:
+                    clear_highlight(page)
+            except Exception as exc:
+                print(f"    WARN: step '{step_name}' failed ({exc}); continuing.")
 
 
 def main():
@@ -221,6 +377,8 @@ def main():
                     continue
 
                 capture(page, out)
+
+        capture_workflows(page, base, data.get("workflows", []), args.output_dir)
 
         context.close()
 

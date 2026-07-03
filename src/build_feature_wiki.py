@@ -33,6 +33,22 @@ def sanitize_filename(name: str) -> str:
     return re.sub(r"[^a-z0-9_-]", "_", name.lower())
 
 
+def t(field, lang: str = "en") -> str:
+    """Read a localized string with graceful fallback (en, then any value)."""
+    if not isinstance(field, dict):
+        return field or ""
+    return field.get(lang) or field.get("en") or next(iter(field.values()), "")
+
+
+def find_workflow_step_screenshot(base_dir: Path, wf_name: str, index: int, step_name: str) -> Optional[Path]:
+    """Locate a workflow step PNG named wf_{wf}_{NN}_{step}.png (any numeric width)."""
+    expected = f"wf_{wf_name}_{index:02d}_{step_name}"
+    for p in base_dir.rglob("wf_*.png"):
+        if p.stem.lower() == expected.lower():
+            return p
+    return None
+
+
 def wiki_page_url(page_slug: Optional[str] = None) -> str:
     if not page_slug:
         return WIKI_BASE_URL
@@ -83,6 +99,7 @@ def write_feature_page(
     output_dir: Path,
     images_dir: Path,
     used_images: Set[Path],
+    workflows: Optional[List[Dict]] = None,
 ):
     slug = sanitize_filename(feature["name"])
     title_en = feature["title"]["en"]
@@ -141,6 +158,18 @@ def write_feature_page(
                 md.new_line("---")
                 md.new_line()
 
+    related = [w for w in (workflows or []) if w.get("feature") == feature["name"]]
+    if related:
+        md.new_header(level=2, title="📚 Workflows")
+        md.new_line()
+        for wf in related:
+            wf_slug = sanitize_filename(wf["name"])
+            link = md.new_inline_link(
+                link=wiki_page_url(f"workflow-{wf_slug}"), text=t(wf["title"])
+            )
+            md.new_line(f"- {link}")
+        md.new_line()
+
     md.new_header(level=2, title="📋 Contents")
     md.new_table_of_contents(table_title="", depth=3)
     md.new_line()
@@ -158,7 +187,68 @@ def write_feature_page(
     return screenshot
 
 
-def build_index(pages: List[Dict], output_dir: Path):
+def write_workflow_page(
+    workflow: Dict,
+    screenshots_dir: Path,
+    output_dir: Path,
+    images_dir: Path,
+    used_images: Set[Path],
+):
+    slug = sanitize_filename(workflow["name"])
+    title = t(workflow["title"])
+    md = MdUtils(file_name=str(output_dir / f"workflow-{slug}"), title=title)
+
+    md.new_line("---")
+    md.new_line()
+    md.new_line(f"![Workflow](https://img.shields.io/badge/Workflow-{slug}-purple)")
+    md.new_line()
+    md.new_header(level=1, title=f"📚 {title}")
+    md.new_line()
+    md.new_line("> **Overview**")
+    md.new_line(f"> {t(workflow.get('description', {}))}")
+    md.new_line()
+
+    feature_slug = workflow.get("feature")
+    if feature_slug:
+        back = md.new_inline_link(
+            link=wiki_page_url(f"feature-{sanitize_filename(feature_slug)}"),
+            text="View the related feature",
+        )
+        md.new_line(f"➡️ {back}")
+        md.new_line()
+
+    md.new_header(level=2, title="🪜 Steps")
+    md.new_line()
+    for i, step in enumerate(workflow.get("steps", []), 1):
+        step_title = t(step.get("title", {})) or f"Step {i}"
+        md.new_header(level=3, title=f"{i}. {step_title}")
+        md.new_line()
+        md.new_line(t(step.get("instruction", {})))
+        md.new_line()
+
+        shot = find_workflow_step_screenshot(
+            screenshots_dir, workflow["name"], i, step.get("name", f"step{i}")
+        )
+        if shot:
+            dest = images_dir / shot.name
+            if dest not in used_images:
+                copy2(shot, dest)
+                used_images.add(dest)
+            add_screenshot_with_caption(md, dest, step_title, f"Step {i}: {step_title}")
+
+    md.new_line("---")
+    md.new_header(level=2, title="🏠 Navigation")
+    md.new_line(f"- [← Back to Feature Overview]({wiki_page_url()})")
+    md.new_line()
+    md.new_line("---")
+    md.new_line("*This page was automatically generated from workflow definitions.*")
+    md.new_line()
+
+    md.create_md_file()
+    print(f"✅ Generated {md.file_name}.md")
+
+
+def build_index(pages: List[Dict], output_dir: Path, workflows: Optional[List[Dict]] = None):
     index = MdUtils(file_name=str(output_dir / "Home"), title="EDAMAME Portal - Feature Documentation")
     index.new_line("---")
     index.new_line()
@@ -185,6 +275,20 @@ def build_index(pages: List[Dict], output_dir: Path):
         feature_link = index.new_inline_link(link=wiki_page_url(f"feature-{pg['slug']}"), text=pg["title"])
         index.new_line(f"{i}. {feature_link}")
     index.new_line()
+
+    if workflows:
+        index.new_line("## 📚 Workflows")
+        index.new_line()
+        index.new_line("> Step-by-step guides for common tasks.")
+        index.new_line()
+        for i, wf in enumerate(workflows, 1):
+            wf_slug = sanitize_filename(wf["name"])
+            wf_link = index.new_inline_link(
+                link=wiki_page_url(f"workflow-{wf_slug}"), text=t(wf["title"])
+            )
+            index.new_line(f"{i}. {wf_link}")
+        index.new_line()
+
     index.new_line("---")
     index.new_line()
     index.new_line("## 📋 Feature Details")
@@ -249,22 +353,28 @@ def main():
 
     data = load_features()
     features = data.get("features", [])
-    print(f"📊 Processing {len(features)} features...")
+    workflows = data.get("workflows", [])
+    print(f"📊 Processing {len(features)} features and {len(workflows)} workflows...")
     print()
 
     for feature in features:
         slug = sanitize_filename(feature["name"])
-        thumb = write_feature_page(feature, screenshots_dir, output_dir, images_dir, used_images)
+        thumb = write_feature_page(
+            feature, screenshots_dir, output_dir, images_dir, used_images, workflows
+        )
         thumb_md = f"![{feature['title']['en']}]({wiki_image_url(thumb.name)})" if thumb else ""
         index_pages.append(
             {"slug": slug, "title": feature["title"]["en"], "thumb_md": thumb_md, "desc": feature["description"]["en"]}
         )
 
+    for workflow in workflows:
+        write_workflow_page(workflow, screenshots_dir, output_dir, images_dir, used_images)
+
     print()
-    build_index(index_pages, output_dir)
+    build_index(index_pages, output_dir, workflows)
     print()
     print("🎉 Wiki generation complete!")
-    print(f"📄 Generated {len(features)} feature pages + 1 index")
+    print(f"📄 Generated {len(features)} feature pages + {len(workflows)} workflow pages + 1 index")
     print(f"🖼️ Processed {len(used_images)} screenshots")
 
 
