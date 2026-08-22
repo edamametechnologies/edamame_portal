@@ -8,3 +8,8 @@ __pycache__/
 # AI rules: .cursor/rules is a dev-only symlink into ../edamame_rules (recreated
 # by edamame_rules/setup.sh). CLAUDE.md is a committed real file — do not ignore it.
 .cursor
+
+# AI rules: dev-only symlinks into ../edamame_rules, recreated by edamame_rules/setup.sh
+.claude/
+CLAUDE.md
+AGENTS.md
