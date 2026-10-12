@@ -1,0 +1,289 @@
+name: Portal Screenshots and Wiki
+
+# Keeps the screenshots in screenshots/ (shown in the README) and the feature
+# wiki in step with the Portal in production.
+#
+# The Portal is deployed from another repository, so a deploy cannot start
+# this workflow through workflow_run. Instead:
+#   - every hour, `detect` reads the build portal.edamame.tech serves (the
+#     content-hashed assets of its index.html, src/deployed_build.py) and
+#     compares it with screenshots/portal_build.txt, the build the committed
+#     screenshots come from. A different build is a deploy: `build-wiki`
+#     takes the screenshots again, commits them to main with the new record,
+#     and republishes the wiki;
+#   - the Portal deploy workflow can also send a `portal-deployed`
+#     repository dispatch after a production deploy, which starts the
+#     capture at once instead of within the hour.
+# A push to main or a manual run captures and republishes the wiki too; it
+# commits the screenshots when the build changed, when the push changed what
+# is captured (features.json, the capture script), or on a manual run.
+#
+# Same pipeline as edamame_hub (.github/workflows/feature-wiki.yml there);
+# src/deployed_build.py is identical in both repositories.
+#
+# Required configuration:
+#   secrets.PORTAL_SCREENSHOT_EMAIL     demo account email (demo@edamame.tech)
+#   secrets.PORTAL_SCREENSHOT_PASSWORD  demo account password
+#   secrets.DEV_GITHUB_TOKEN            PAT with repo + wiki write access
+#   secrets.EDAMAME_POSTURE_PIN / vars.EDAMAME_POSTURE_USER / vars.EDAMAME_POSTURE_DOMAIN
+# Optional: vars.PORTAL_SCREENSHOT_BASE_URL (another origin; never committed).
+
+on:
+  schedule:
+    - cron: "41 * * * *"
+  repository_dispatch:
+    types: [portal-deployed]
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: >-
+          Portal origin to capture, e.g. a preprod build (overrides the
+          PORTAL_SCREENSHOT_BASE_URL repository variable; empty = production).
+          Only production captures are committed.
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+env:
+  # The production origin: the only one whose captures are committed.
+  PRODUCTION_URL: https://portal.edamame.tech
+
+# One capture at a time: two runs must not push screenshots concurrently.
+concurrency:
+  group: portal-screenshots
+  cancel-in-progress: false
+
+jobs:
+  # No posture action here: this job only reads the public Portal page and
+  # this public repository, holds no secret, and runs every hour (a posture
+  # setup would register a Hub device per run).
+  detect:
+    name: Detect a Portal deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      capture: ${{ steps.decide.outputs.capture }}
+      commit: ${{ steps.decide.outputs.commit }}
+    steps:
+      - name: Checkout the build record
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            src/deployed_build.py
+            screenshots/portal_build.txt
+          sparse-checkout-cone-mode: false
+
+      - name: Compare the deployed Portal build with the recorded one
+        id: decide
+        env:
+          EVENT: ${{ github.event_name }}
+          DISPATCH_ENVIRONMENT: ${{ github.event.client_payload.environment }}
+          BASE_URL: ${{ github.event.inputs.base_url || vars.PORTAL_SCREENSHOT_BASE_URL }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.event.after }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -uo pipefail
+
+          check() {
+            status=0
+            build="$(python3 src/deployed_build.py --base-url "$PRODUCTION_URL" --compare screenshots/portal_build.txt)" || status=$?
+          }
+
+          other_environment=false
+          if [[ "$EVENT" == repository_dispatch && -n "$DISPATCH_ENVIRONMENT" && "$DISPATCH_ENVIRONMENT" != prod ]]; then
+            other_environment=true
+          fi
+
+          check
+          # A deploy notification can arrive before the CDN serves the new
+          # index.html: wait up to 10 minutes for the build to change. A
+          # redeploy of the same build never changes it; capture anyway.
+          if [[ "$EVENT" == repository_dispatch && $other_environment == false && $status -eq 0 ]]; then
+            for _ in $(seq 1 20); do
+              sleep 30
+              check
+              [[ $status -eq 0 ]] || break
+            done
+          fi
+
+          case $status in
+            0) changed=false ;;
+            3) changed=true ;;
+            *) echo "::error::Could not read the deployed Portal build (exit $status)"; exit 1 ;;
+          esac
+
+          capture=true
+          commit=false
+          case "$EVENT" in
+            schedule)
+              capture=$changed
+              commit=$changed
+              ;;
+            repository_dispatch)
+              if [[ $other_environment == true ]]; then
+                capture=false
+              else
+                commit=true
+              fi
+              ;;
+            workflow_dispatch)
+              commit=true
+              ;;
+            push)
+              commit=$changed
+              # The files the push changed, from the compare API: the push
+              # payload's commits do not always list them. When they cannot
+              # be listed, commit: a production capture is always a valid
+              # README screenshot.
+              if touched="$(gh api "repos/$GITHUB_REPOSITORY/compare/$PUSH_BEFORE...$PUSH_AFTER" --jq '.files[].filename')"; then
+                if grep -qxE 'features\.json|src/generate_screenshots\.py' <<< "$touched"; then
+                  commit=true
+                fi
+              else
+                echo "::warning::Could not list the files this push changed; committing the capture."
+                commit=true
+              fi
+              ;;
+          esac
+
+          # Only production captures on main are the README's screenshots.
+          if [[ -n "$BASE_URL" && "${BASE_URL%/}" != "$PRODUCTION_URL" ]]; then commit=false; fi
+          if [[ "$GITHUB_REF" != refs/heads/main ]]; then commit=false; fi
+
+          echo "capture=$capture" >> "$GITHUB_OUTPUT"
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+          {
+            echo "Deployed Portal build: \`$build\`"
+            echo
+            echo "Changed since the committed screenshots: $changed. Capture: $capture. Commit: $commit."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "build=$build changed=$changed capture=$capture commit=$commit"
+
+  build-wiki:
+    name: Capture screenshots and publish
+    needs: detect
+    if: needs.detect.outputs.capture == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Setup EDAMAME Posture
+        uses: edamametechnologies/edamame_posture_action@v1
+        with:
+          edamame_user: ${{ vars.EDAMAME_POSTURE_USER }}
+          edamame_domain: ${{ vars.EDAMAME_POSTURE_DOMAIN }}
+          edamame_pin: ${{ secrets.EDAMAME_POSTURE_PIN }}
+          edamame_id: ${{ github.run_id }}
+          checkout: true
+          # The screenshot push to main, and the wiki clone and push, use
+          # DEV_GITHUB_TOKEN (the checkout puts it in origin's URL), which the
+          # org IP allow list refuses until the Hub lists this runner. This
+          # repository is public and answers the default probe at once, which
+          # proves nothing: probe a private repository with that token
+          # (self-hosted-runners rule, "Org IP allow list").
+          wait_for_api: true
+          wait_for_https: true
+          wait_repository: edamametechnologies/edamame_core
+          token: ${{ secrets.DEV_GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Playwright browser
+        run: python -m playwright install --with-deps chromium
+
+      - name: Record the Portal build being captured
+        # Read before the capture: if a deploy lands during it, the record
+        # names the older build and the next hourly check captures again.
+        run: python src/deployed_build.py --base-url "$PRODUCTION_URL" > "$RUNNER_TEMP/portal_build.txt"
+
+      - name: Capture screenshots (features + workflows)
+        id: capture
+        # Non-blocking: if live capture fails (e.g. login/MFA), the wiki still
+        # builds from the screenshots committed to the repo, nothing is
+        # committed, and the last step turns the run red.
+        # The login is the demo account (demo@edamame.tech, MFA off), whose
+        # devices, usage and notifications are simulated.
+        continue-on-error: true
+        env:
+          PORTAL_SCREENSHOT_EMAIL: ${{ secrets.PORTAL_SCREENSHOT_EMAIL }}
+          PORTAL_SCREENSHOT_PASSWORD: ${{ secrets.PORTAL_SCREENSHOT_PASSWORD }}
+          PORTAL_SCREENSHOT_BASE_URL: ${{ github.event.inputs.base_url || vars.PORTAL_SCREENSHOT_BASE_URL }}
+        run: python src/generate_screenshots.py --headless
+
+      - name: Commit the screenshots of the deployed build
+        if: needs.detect.outputs.commit == 'true' && steps.capture.outcome == 'success'
+        run: |
+          set -euo pipefail
+          build="$(cat "$RUNNER_TEMP/portal_build.txt")"
+          {
+            echo "# Portal build the screenshots in this directory were captured from: the"
+            echo "# content-hashed assets of $PRODUCTION_URL/index.html."
+            echo "# Written by .github/workflows/feature-wiki.yml (src/deployed_build.py); do not edit."
+            echo "$build"
+          } > screenshots/portal_build.txt
+
+          git config user.name "EDAMAME Dev"
+          git config user.email "dev@edamame.tech"
+          # Workflow step screenshots (wf_*.png) are gitignored: they only feed the wiki.
+          git add -- screenshots
+          if git diff --cached --quiet; then
+            echo "Screenshots and build record unchanged."
+            exit 0
+          fi
+          # [skip ci]: this push must not start the workflow again.
+          git commit -q -m "docs: Portal screenshots of build ${build} [skip ci]"
+          if ! git push origin HEAD:main; then
+            echo "main moved during the capture; rebasing the screenshot commit onto it."
+            git fetch origin main
+            git rebase FETCH_HEAD
+            git push origin HEAD:main
+          fi
+
+      - name: Generate wiki markdown files
+        run: |
+          python src/build_feature_wiki.py \
+            --screenshots-dir screenshots \
+            --output-dir wiki
+
+      - name: Clone wiki
+        run: |
+          mkdir -p /tmp/wiki/
+          git clone https://${{ secrets.DEV_GITHUB_TOKEN }}@github.com/edamametechnologies/edamame_portal.wiki.git /tmp/wiki
+
+      - name: Copy generated markdown files and images
+        run: |
+          cp wiki/*.md /tmp/wiki/
+          mkdir -p /tmp/wiki/images
+          cp -r wiki/images/* /tmp/wiki/images/ 2>/dev/null || true
+
+      - name: Push to wiki
+        run: |
+          cd /tmp/wiki
+          git config --global user.email "dev@edamame.tech"
+          git config --global user.name "EDAMAME Dev"
+          git add .
+          if git commit -m "docs: Updated wiki files"; then
+            echo "Changes committed, pushing to wiki..."
+            git push
+          else
+            echo "No changes to commit to wiki."
+            exit 0
+          fi
+
+      - name: Fail when the capture failed
+        if: steps.capture.outcome == 'failure'
+        run: |
+          echo "::error::Screenshot capture failed: the README screenshots and the wiki were not refreshed."
+          exit 1

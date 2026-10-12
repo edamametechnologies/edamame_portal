@@ -1,0 +1,4 @@
+# Portal build the screenshots in this directory were captured from: the
+# content-hashed assets of https://portal.edamame.tech/index.html.
+# Written by .github/workflows/feature-wiki.yml (src/deployed_build.py); do not edit.
+index-BcdBfV3x.js index-BgLw9lmb.css
