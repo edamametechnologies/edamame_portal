@@ -1,6 +1,6 @@
 # EDAMAME Portal
 
-> **EDAMAME** is the developer-first, agent-first runtime security layer for the SDLC. **EDAMAME Security** protects workstations and local coding sessions, **EDAMAME Posture** secures CI/CD runners, build hosts, and self-hosted agent hosts, **EDAMAME Hub** gives teams fleet visibility and proof, and **EDAMAME Portal** handles account access and managed LLM subscription.
+> **EDAMAME** is the trust layer for AI agents and the machines they run on, proven by both security posture and runtime behavior. **EDAMAME Security** protects workstations and the AI agents on them, **EDAMAME Posture** secures CI/CD runners and any server running AI agents, cloud or self-hosted, **EDAMAME Hub** gives teams fleet visibility, AI governance and proof, and **EDAMAME Portal** handles account access and the managed LLM subscription.
 
 ## Overview
 
@@ -19,6 +19,7 @@ plan available)
 **Learn more:** [Feature wiki](https://github.com/edamametechnologies/edamame_portal/wiki)
 | [Step-by-step guides](#step-by-step-guides)
 | [AI Assistant user guide](https://github.com/edamametechnologies/edamame_security#ai-assistant--user-guide)
+| [Videos](#videos)
 
 ![EDAMAME Portal home](screenshots/01_home_main.png)
 
@@ -101,6 +102,15 @@ These screenshots come from the production Portal on a demo account with
 simulated devices and usage, and are refreshed automatically each time a new
 version of the Portal is deployed. Every page is documented, with screenshots,
 in the [feature wiki](https://github.com/edamametechnologies/edamame_portal/wiki).
+
+## Videos
+
+<a href="https://youtu.be/6rBYUqEGNwE"><img src="https://img.youtube.com/vi/6rBYUqEGNwE/maxresdefault.jpg" alt="Watch: your devices and AI usage in one place, EDAMAME Portal" width="640"></a>
+
+- [Your devices and AI usage in one place](https://youtu.be/6rBYUqEGNwE)
+- [An API key for EDAMAME Posture in your CI/CD](https://youtu.be/c7XXrqBRAKE)
+
+Both in the [EDAMAME Portal playlist](https://www.youtube.com/playlist?list=PLWBAgZrxzYNE). The videos use a demo account, with simulated devices and usage.
 
 ## Getting started
 
