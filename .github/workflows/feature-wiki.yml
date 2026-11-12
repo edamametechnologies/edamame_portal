@@ -287,3 +287,12 @@ jobs:
         run: |
           echo "::error::Screenshot capture failed: the README screenshots and the wiki were not refreshed."
           exit 1
+
+  notify:
+    name: Slack alert
+    needs: [detect, build-wiki]
+    if: always() && github.event_name != 'pull_request'
+    uses: edamametechnologies/.github/.github/workflows/slack-notify.yml@main
+    with:
+      results: ${{ toJSON(needs) }}
+    secrets: inherit
